@@ -3,6 +3,7 @@
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
 
     "watch": true,
+    "resolveJsonModule": true,
 
     /* Basic Options */
     // "incremental": true,                         /* Enable incremental compilation */
