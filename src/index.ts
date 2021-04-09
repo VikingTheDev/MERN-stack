@@ -6,12 +6,13 @@ import { dbConnect } from "./database/db"
 import { 
     newUser, 
     updateUserDiscordId, 
-    pushUserRanks, 
-    pushUserTags,
+    addUserRanks, 
+    addUserTags,
     updateUserName,
     updateUserPassword,
-    updateUserEmail
-} from "./database/helpers/helpers"
+    updateUserEmail,
+    deleteUser
+} from "./database/helpers/user_helpers"
 
 dbConnect(config.dataBase.connectionUrl);
 
@@ -43,12 +44,10 @@ const user = {
     },
 }
 
-// newUser(user);
-
 app.get("/", (req, res) => {
     res.send("Hello World"); 
 });
 
 app.listen(port, () => {
-    console.log(`Website is listening on localpost:${port}`);
+    console.log(`Website is listening on localport:${port}`);
 });
