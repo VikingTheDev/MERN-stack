@@ -1,7 +1,7 @@
 import db, { Collection } from "mongoose";
 import { userSchema } from "../models/user"
 
-// Todo: Finish todos in the file, add functions to get and remove stuff and start doing jsdocs
+// Todo: Finish todos in the file and start doing jsdocs
 
 //declare models
 const users = db.model('users', userSchema);
@@ -9,13 +9,7 @@ const users = db.model('users', userSchema);
 
 // declare all interfaces used for helpers
 
-interface rank {
-    rankName: string;
-    rankId: number;
-    permissions: string[];
-}
-
-interface ranks extends Array<rank>{};
+interface ranks extends Array<String>{};
 
 interface tags extends Array<String>{};
 
@@ -27,7 +21,7 @@ interface userObj {
         discordId?: string;
         registerDate: number;
         ranks?: ranks;
-        tags?: string[];
+        tags?: tags;
     };
 }
 
@@ -60,9 +54,6 @@ export async function updateUserDiscordId (name: string, data: string) {
 }
 
 export async function addUserRanks (name: string, tempdata: ranks) {
-    // Need to find a way to update rank permissions in real time,
-    // might make a separate collection with ranks and just push the 
-    // rank object into that and then pull the info from there
     const id = await findId(name);
     const data: any = tempdata;
     users.findByIdAndUpdate(id, {$addToSet: {'userinfo.ranks': data}}, {useFindAndModify: false}, (err, doc) => {
@@ -71,8 +62,11 @@ export async function addUserRanks (name: string, tempdata: ranks) {
     })
 }
 
+export async function removeUserRank (name: string, rankId: string) {
+
+}
+
 export async function addUserTags (name: string, tempdata: tags) {
-    // Consider doing the same for tags as for ranks
     const id = await findId(name);
     const data: any = tempdata;
     users.findByIdAndUpdate(id, {$addToSet: {'userinfo.tags': data}}, {useFindAndModify: false}, (err, doc) => {
