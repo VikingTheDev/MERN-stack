@@ -1,64 +1,93 @@
 import db, { Collection } from "mongoose";
-import { rankSchema } from "../models/ranks" 
+import { rankSchema } from "../models/ranks";
 
-/**
- *  Honestly not sure what the best way to deal with updating perms would be. Could have a system for adding/removing individul perms, or maybe pass a object
- *  with all available perms and a true/false depending on whether or not they should have the permission or not, the latter would make more sense if ranks 
- *  will have a config page like discord (so i guess it depends if my ape brain will be able to create a system that's as intuitive as dicsord's with react)
- *  To future self: use your refreshed brain to think about this, I think my brain will melt if I think any harder than I've already done tonight.
- */
-
-//TODO: Finish all the goddamn functions so that we can move on from this mess, and please get the JSdocs stuff done aswell
-
+// ! Consider adding CBs to the mongoose callbacks instead of logging in console (for API purposes), maybe an object: {err: bool, completed: bool, msg: string}
 
 //declare models
 const ranks = db.model('ranks', rankSchema);
 
 
 //declare relevant interfaces
-interface perms extends Array<String>{};
-
-
-interface rankId{
-    rankId: [
-        {
-            _id: string;
-        }
-   ];
+export interface rankObj {
+    rankName: string;
+    permissions: permsObj;
 }
 
-interface rankObj {
-    rankId: rankId;
-    rankName: string;
-    permissions: perms;
+interface permsObj {
+    master_user?: boolean;
+    manage_users?: boolean;
+    manage_site?: boolean;
+    manage_shop?: boolean;
+    access_tickets?: boolean;
+    access_order_logs?: boolean;
+}
+
+
+// Define class used to construct the permission object
+class permsObj {
+    constructor (data: permsObj) {
+        this.master_user = data.master_user ? true : false;
+        this.manage_users = data.manage_users ? true : false;
+        this.manage_site = data.manage_site ? true : false;
+        this.manage_shop = data.manage_shop ? true : false;
+        this.access_tickets = data.access_tickets ? true : false;
+        this.access_order_logs = data.access_order_logs ? true : false; 
+    }
 }
 
 // export function for creating a new rank
 export async function newRank(data: rankObj) {
-    const newRank = new ranks({
-        _id: data.rankId, //
-        rankName: data.rankName,
-        permissions: data.permissions
+    await ranks.find({rankName: data.rankName}, (err, docs) => {
+        if(err) return console.log(err);
+        if(!docs[0]) {
+            let perms: permsObj = new permsObj(data.permissions);
+            const newRank = new ranks({ 
+                rankName: data.rankName, 
+                permissions: perms
+            })
+ 
+            newRank.save(function (err:any) { 
+                if (err) return console.log(err);
+                console.log(`Saved document`); 
+            })
+        } else {
+            console.log(`A rank with the name ${data.rankName} already exists`);
+        }
     })
+}
 
-    newRank.save(function (err:any) {
+// export function for deleting a rank
+export async function deleteRank(rankId: string) {
+    await ranks.findByIdAndDelete(rankId, null, (err, doc) => {
+        if(err) return console.log(err);
+        if(doc) {
+            console.log(`Rank has been deleted`);
+        } else {
+            console.log(`The rank could not be found`);
+        }
+    });
+}
+
+// export function for updating the name
+export async function updateName(rankId: string, name: string) {
+    await ranks.findByIdAndUpdate(rankId, {$set: {rankName: name}}, {useFindAndModify: false}, (err, doc) => {
+        if(err) return console.log(err);
+        if(doc) {
+            console.log(`Name has been updated`);
+        } else {
+            console.log(`Rank could not be found`);
+        }
+    })
+}
+
+export async function updatePerms(rankId: string, data: permsObj) {
+    let perms: permsObj = new permsObj(data);
+    await ranks.findByIdAndUpdate(rankId, {$set: {permissions: perms}}, {useFindAndModify: false}, (err, doc) => {
         if (err) return console.log(err);
-        console.log(`Saved document`) 
+        if(doc) {
+            console.log(`Permissions have been updated`);
+        } else {
+            console.log(`Rank could not be found`);
+        }
     })
-}
-
-export async function deleteRank(rankId: rankId) {
-
-}
-
-export async function updateName(rankId: rankId, name: string) {
-
-}
-
-export async function addPermissions(rankId: rankId, permissions: perms) {
-
-}
-
-export async function removePermissions(rankId: rankId, permissions: perms) {
-
 }

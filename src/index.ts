@@ -13,6 +13,13 @@ import {
     updateUserEmail,
     deleteUser
 } from "./database/helpers/user_helpers"
+import {
+    newRank,
+    rankObj,
+    deleteRank,
+    updateName,
+    updatePerms
+} from "./database/helpers/ranks_helpers"
 
 dbConnect(config.dataBase.connectionUrl);
 
@@ -43,6 +50,27 @@ const user = {
         tags: ['#discord', '#fivem', '#bot_owner', '#owner', '#support_team']
     },
 }
+
+const rank: rankObj = {
+    rankName: "Owner",
+    permissions: {
+        master_user: true,
+        manage_site: true,
+    }
+}
+
+const perms = {
+    master_user: false,
+    access_tickets: true
+}
+
+// newRank(rank);
+
+// updateName("6074a5a39b9e32269c95766d", "Cool Guy");
+
+// updatePerms("6074a5a39b9e32269c95766d", perms);
+
+// deleteRank("6074a5a39b9e32269c95766d")
 
 app.get("/", (req, res) => {
     res.send("Hello World"); 

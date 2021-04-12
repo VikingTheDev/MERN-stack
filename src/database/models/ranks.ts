@@ -1,8 +1,9 @@
-import {Schema} from "mongoose";
+import {Schema, Types} from "mongoose";
 
 export const rankSchema = new Schema({
-    rankName: { type: String, "default": "" },
-    permissions: { type: Array, "default": [] }
+    _id: { type: String, "default": Types.ObjectId().toHexString() },
+    rankName: String,
+    permissions: Object
 });
 
-// I'm so proud of you, you managed to write 6 lines of code without a single error :)
+// I'm so proud of you, you managed to write 5 lines of code without a single error :)
