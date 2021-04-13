@@ -18,7 +18,8 @@ import {
     rankObj,
     deleteRank,
     updateName,
-    updatePerms
+    updatePerms,
+    getRank
 } from "./database/helpers/ranks_helpers"
 
 dbConnect(config.dataBase.connectionUrl);
@@ -71,6 +72,10 @@ const perms = {
 // updatePerms("6074a5a39b9e32269c95766d", perms);
 
 // deleteRank("6074a5a39b9e32269c95766d")
+
+getRank("60756b94f940d426cc52295", ({ err, data }) => {
+    console.log(err, data)
+})
 
 app.get("/", (req, res) => {
     res.send("Hello World"); 

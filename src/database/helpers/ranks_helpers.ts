@@ -13,6 +13,10 @@ export interface rankObj {
     permissions: permsObj;
 }
 
+interface callback {
+    (cb: {err: boolean, data: object}): void;
+}
+
 interface permsObj {
     master_user?: boolean;
     manage_users?: boolean;
@@ -80,6 +84,7 @@ export async function updateName(rankId: string, name: string) {
     })
 }
 
+// export function for updating the permissions
 export async function updatePerms(rankId: string, data: permsObj) {
     let perms: permsObj = new permsObj(data);
     await ranks.findByIdAndUpdate(rankId, {$set: {permissions: perms}}, {useFindAndModify: false}, (err, doc) => {
@@ -89,5 +94,11 @@ export async function updatePerms(rankId: string, data: permsObj) {
         } else {
             console.log(`Rank could not be found`);
         }
+    })
+}
+
+export async function getRank(rankId: string, cb: callback) {
+    await ranks.findById(rankId, '', null, (err, doc) => {
+        cb({err: err ? true : false, data: doc});
     })
 }
