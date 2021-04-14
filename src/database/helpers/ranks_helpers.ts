@@ -1,8 +1,6 @@
 import db, { Collection } from "mongoose";
 import { rankSchema } from "../models/ranks";
 
-// ! Consider adding CBs to the mongoose callbacks instead of logging in console (for API purposes), maybe an object: {err: bool, completed: bool, msg: string}
-
 //declare models
 const ranks = db.model('ranks', rankSchema);
 
@@ -13,8 +11,16 @@ export interface rankObj {
     permissions: permsObj;
 }
 
-interface callback {
-    (cb: {err: boolean, data: object}): void;
+interface updateCB {
+    (cb: {err: { bool: boolean, data: any}, completed: boolean}): void;
+}
+
+interface getCB {
+    (cb: {err: { bool: boolean, data: any}, data: object}): void;
+}
+
+interface newCB {
+    (cb: {err: { bool: boolean, data: any}, completed: boolean, data?: any}): void;
 }
 
 interface permsObj {
@@ -40,7 +46,7 @@ class permsObj {
 }
 
 // export function for creating a new rank
-export async function newRank(data: rankObj) {
+export async function newRank(data: rankObj, cb: newCB) {
     await ranks.find({rankName: data.rankName}, (err, docs) => {
         if(err) return console.log(err);
         if(!docs[0]) {
@@ -51,54 +57,51 @@ export async function newRank(data: rankObj) {
             })
  
             newRank.save(function (err:any) { 
-                if (err) return console.log(err);
-                console.log(`Saved document`); 
+                cb({err: { bool: err ? true : false, data: err}, completed: true, data: newRank}); 
             })
         } else {
-            console.log(`A rank with the name ${data.rankName} already exists`);
+            cb({err: { bool: true, data: 'Rank name already exists'}, completed: false});
         }
     })
 }
 
 // export function for deleting a rank
-export async function deleteRank(rankId: string) {
+export async function deleteRank(rankId: string, cb: newCB) {
     await ranks.findByIdAndDelete(rankId, null, (err, doc) => {
-        if(err) return console.log(err);
-        if(doc) {
-            console.log(`Rank has been deleted`);
+        if (doc) {
+            cb({err: { bool: err ? true : false, data: err}, completed: true});
         } else {
-            console.log(`The rank could not be found`);
+            cb({err: { bool: err ? true : false, data: err}, completed: false});
         }
-    });
+    })
 }
 
 // export function for updating the name
-export async function updateName(rankId: string, name: string) {
+export async function updateName(rankId: string, name: string, cb: updateCB) {
     await ranks.findByIdAndUpdate(rankId, {$set: {rankName: name}}, {useFindAndModify: false}, (err, doc) => {
-        if(err) return console.log(err);
-        if(doc) {
-            console.log(`Name has been updated`);
+        if (doc) {
+            cb({err: { bool: err ? true : false, data: err}, completed: true});
         } else {
-            console.log(`Rank could not be found`);
+            cb({err: { bool: err ? true : false, data: err}, completed: false});
         }
     })
 }
 
 // export function for updating the permissions
-export async function updatePerms(rankId: string, data: permsObj) {
+export async function updatePerms(rankId: string, data: permsObj, cb: updateCB) {
     let perms: permsObj = new permsObj(data);
     await ranks.findByIdAndUpdate(rankId, {$set: {permissions: perms}}, {useFindAndModify: false}, (err, doc) => {
-        if (err) return console.log(err);
-        if(doc) {
-            console.log(`Permissions have been updated`);
+        if (doc) {
+            cb({err: { bool: err ? true : false, data: err}, completed: true});
         } else {
-            console.log(`Rank could not be found`);
+            cb({err: { bool: err ? true : false, data: err}, completed: false});
         }
     })
 }
 
-export async function getRank(rankId: string, cb: callback) {
+// export function for getting and returning a rank in a cb
+export async function getRank(rankId: string, cb: getCB) {
     await ranks.findById(rankId, '', null, (err, doc) => {
-        cb({err: err ? true : false, data: doc});
+        cb({err: { bool: err ? true : false, data: err}, data: doc});
     })
 }
