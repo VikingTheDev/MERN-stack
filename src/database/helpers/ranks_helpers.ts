@@ -48,7 +48,6 @@ class permsObj {
 // export function for creating a new rank
 export async function newRank(data: rankObj, cb: newCB) {
     await ranks.find({rankName: data.rankName}, (err, docs) => {
-        if(err) return console.log(err);
         if(!docs[0]) {
             let perms: permsObj = new permsObj(data.permissions);
             const newRank = new ranks({ 
@@ -78,12 +77,41 @@ export async function deleteRank(rankId: string, cb: newCB) {
 
 // export function for updating the name
 export async function updateName(rankId: string, name: string, cb: updateCB) {
-    await ranks.findByIdAndUpdate(rankId, {$set: {rankName: name}}, {useFindAndModify: false}, (err, doc) => {
-        if (doc) {
-            cb({err: { bool: err ? true : false, data: err}, completed: true});
+    await ranks.find({rankName: name}, async (err, docs) => {
+        if(!docs[0]) {
+            await ranks.findByIdAndUpdate(rankId, {$set: {rankName: name}}, {useFindAndModify: false}, (err, doc) => {
+                if (doc) {
+                    cb({
+                        err: 
+                        { 
+                            bool: err ? true : false, 
+                            data: err
+                        }, 
+                        completed: true
+                    });
+                } else {
+                    // ! This callback won't work for some reason
+                    cb({
+                        err: 
+                        { 
+                            bool: true,
+                            data: 'Rank could not be found'
+                        }, 
+                        completed: false
+                    });
+                }
+            })       
         } else {
-            cb({err: { bool: err ? true : false, data: err}, completed: false});
+            cb( {
+                err: 
+                { 
+                    bool: true, 
+                    data: 'Rank name already exists'
+                }, 
+                completed: false
+            })
         }
+
     })
 }
 
